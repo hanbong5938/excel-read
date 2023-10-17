@@ -1,7 +1,6 @@
 package com.hanbong.excel.support;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.IntStream;
@@ -38,7 +37,7 @@ public class DefaultExcelColumnReaderSupport<T> extends ExcelColumReaderSupport<
               .mapToObj(i -> getCellValue(row.getCell(i)))
               .toArray());
     } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-      throw new ExcelException(e);
+      throw new ExcelException(e.getMessage(), e);
     }
   }
 }

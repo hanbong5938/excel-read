@@ -7,11 +7,11 @@ public enum DefaultExcelInfo implements ExcelInfo{
 
     DEFAULT(null, ROW_START_INDEX + 1, COLUMN_START_INDEX);
 
-    private String name;
+    private final String name;
 
-    private int startRow;
+    private final int startRow;
 
-    private int startCell;
+    private final int startCell;
 
     DefaultExcelInfo(final String name, final int startRow, final int startCell) {
         this.name = name;

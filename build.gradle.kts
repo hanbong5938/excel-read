@@ -2,7 +2,7 @@ plugins {
     kotlin("jvm") version "1.7.22"
 }
 
-group = "com.example"
+group = "com.hanbong"
 version = "0.0.1-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_17
 

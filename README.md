@@ -31,3 +31,74 @@ public class DefaultExcelFileReader<T> extends SXSSFExcelFileReader<T> {
   }
 }
 ```
+
+
+아래 처럼 `ExcelInfo` 를 구현하여 객체를 사용하면 row나 column 의 지삭 위치 혹은 sheet 이름 지정 가능
+
+sheet 이름 null 인 경우 1번째 시트 선택
+
+```java
+public enum DefaultExcelInfo implements ExcelInfo{
+
+    DEFAULT(null, ROW_START_INDEX + 1, COLUMN_START_INDEX);
+
+    private final String name;
+
+    private final int startRow;
+
+    private final int startCell;
+
+    DefaultExcelInfo(final String name, final int startRow, final int startCell) {
+        this.name = name;
+        this.startRow = startRow;
+        this.startCell = startCell;
+    }
+
+    @Override
+    public String getSheetName() {
+        return this.name;
+    }
+
+    @Override
+    public int getStartRow() {
+        return this.startRow;
+    }
+
+    @Override
+    public int getStartCell() {
+        return this.startCell;
+    }
+}
+
+```
+
+### 사용 방법
+
+InputStream 을 불러와서 아래와 같이 사용하면 `List<T>` 를 리턴
+
+기본적으로 `DefaultExcelInfo.DEFAULT` 의 설정을 사용하도록 되어있다.
+
+```java
+class DefaultExcelFileReaderTest {
+
+    private final ExcelFileReader<ExcelReadModel> excelFileReader = new DefaultExcelFileReader<>();
+
+    @Test
+    void getData() {
+        var inputStream = getClass().getClassLoader().getResourceAsStream("example.xlsx");
+
+        var excel = excelFileReader.getData(inputStream, ExcelReadModel.class);
+
+        assertNotNull(excel);
+    }
+
+    @Test
+    void getData_withConfig() {
+        var inputStream = getClass().getClassLoader().getResourceAsStream("example.xlsx");
+
+        var excel = excelFileReader.getData(inputStream, ExcelReadModel.class, DefaultExcelInfo.DEFAULT);
+
+        assertNotNull(excel);
+    }
+}
+```

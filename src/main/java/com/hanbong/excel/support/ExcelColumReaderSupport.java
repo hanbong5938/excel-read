@@ -1,9 +1,7 @@
 package com.hanbong.excel.support;
 
-
-import java.util.List;
-
 import com.hanbong.excel.enums.ExcelInfo;
+import com.hanbong.excel.model.ExcelReadResult;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Sheet;
 
@@ -13,10 +11,14 @@ public abstract class ExcelColumReaderSupport<T> implements ExcelReaderSupport {
       case _NONE, ERROR, BLANK -> "";
       case BOOLEAN -> cell.getBooleanCellValue();
       case STRING -> cell.getStringCellValue();
-      case NUMERIC -> cell.getNumericCellValue();
+      case NUMERIC -> getNumericCellValue(cell);
       case FORMULA -> cell.getCellFormula();
     };
   }
 
-  public abstract List<T> getColumData(Sheet sheet, Class<T> clazz, ExcelInfo excelInfo);
+  private String getNumericCellValue(final Cell cell) {
+    return String.valueOf(cell.getNumericCellValue());
+  }
+
+  public abstract ExcelReadResult<T> getColumData(Sheet sheet, Class<T> clazz, ExcelInfo excelInfo);
 }

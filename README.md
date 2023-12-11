@@ -1,11 +1,14 @@
-## 엑셀 파일 데이터 읽어 오는 모듈
+# 엑셀 파일 데이터 읽어 오거나 엑셀 출력하는 모듈
+
+## 데이터 읽어오는 경우
 
 ### DTO 
 객체를 생성할때 Java Reflection 을 사용하여 접근하기에 AllArgsConstructor 필요
 ```java
 // poi 에서 NUMERIC 셀을 소수점으로 처리하기에 Double 사용 필요
+// 컬럼에 대한 밸리데이션이 필요한 경우 아래와 같이 어노테이션으로 처리 가능하다.
 public record ExcelReadModel(
-        String name,
+         @ExcelValidation(regex = "^[a-zA-Z]+$", nullAble = false, enableBlank = false) String name,
         String phone,
         String mail,
         Double num){
@@ -101,4 +104,71 @@ class DefaultExcelFileReaderTest {
         assertNotNull(excel);
     }
 }
+```
+
+## 데이터 출력하는 경우
+
+### DTO
+```java
+@HeaderStyle(style = @ExcelColumnStyle(excelCellStyleClass = RedHeaderStyle.class))
+public class ExcelWriterDto {
+  @ExcelColumn(headerName = "하이")
+  public String hi;
+
+  @ExcelColumn(headerName = "헤이", headerStyle = @ExcelColumnStyle(excelCellStyleClass = RedHeaderStyle.class))
+  public String hey;
+
+  public ExcelWriterDto(final String hey) {
+    this.hi = "hi";
+    this.hey = hey;
+  }
+}
+```
+
+```java
+// 스타일 적용시
+public class RedHeaderStyle extends CustomExcelCellStyle {
+
+  @Override
+  public void configure(final ExcelCellStyleConfig config) {
+    config
+        .foregroundColor(255, 0, 0)
+        .excelBorder(DefaultExcelBorder.newInstance(ExcelBorderStyle.THIN))
+        .excelAlign(DefaultExcelAlign.CENTER_CENTER);
+  }
+}
+```
+
+### 사용 방법
+
+```java
+  @Test
+  void generate() {
+    var temp = new ExcelWriterModel("temp");
+    final SXSSFExcelFileWriter<ExcelWriterModel> execlFileWriter =
+        new DefaultExeclFileWriter<>(List.of(temp), ExcelWriterModel.class);
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    try {
+      execlFileWriter.addRows(List.of(temp, temp));
+      execlFileWriter.sheet.addMergedRegion(new CellRangeAddress(0, 1, 0, 0));
+      execlFileWriter.sheet.addMergedRegion(new CellRangeAddress(0, 1, 1, 1));
+      execlFileWriter.addColumns(
+          List.of("이름", "성함"), 0, execlFileWriter.sheet.getRow(0).getLastCellNum());
+      execlFileWriter.addColumns(
+          List.of("이름2", "성함2"), 1, execlFileWriter.sheet.getRow(1).getLastCellNum());
+      execlFileWriter.workbook.write(outputStream);
+      saveToFile(outputStream, "/data/yourExcelFile.xlsx");
+      assertNotNull(temp);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void saveToFile(ByteArrayOutputStream outputStream, String filePath) throws IOException {
+    try (FileOutputStream fileOut = new FileOutputStream(filePath)) {
+      outputStream.writeTo(fileOut);
+    }
+  }
+}
+
 ```

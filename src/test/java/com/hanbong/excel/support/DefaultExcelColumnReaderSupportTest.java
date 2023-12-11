@@ -24,6 +24,6 @@ class DefaultExcelColumnReaderSupportTest {
 
         var data = columnReadSupport.getColumData(sheet, ExcelReadModel.class, DefaultExcelInfo.DEFAULT);
 
-        assertFalse(data.isEmpty());
+        assertFalse(data != null);
     }
 }

@@ -1,6 +1,6 @@
 package com.hanbong.excel.utils;
 
-
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.*;
@@ -18,6 +18,28 @@ public final class SuperClassReflectionUtils {
     return fields;
   }
 
+  public static Annotation getAnnotation(
+      final Class<?> clazz, final Class<? extends Annotation> targetAnnotation) {
+    for (Class<?> clazzInClasses : getAllClassesIncludingSuperClasses(clazz, false)) {
+      if (clazzInClasses.isAnnotationPresent(targetAnnotation)) {
+        return clazzInClasses.getAnnotation(targetAnnotation);
+      }
+    }
+    return null;
+  }
+
+  public static Field getField(final Class<?> clazz, final String name)
+      throws NoSuchFieldException, SecurityException {
+    for (Class<?> clazzInClasses : getAllClassesIncludingSuperClasses(clazz, false)) {
+      for (Field field : clazzInClasses.getDeclaredFields()) {
+        if (field.getName().equals(name)) {
+          return clazzInClasses.getDeclaredField(name);
+        }
+      }
+    }
+    throw new NoSuchFieldException();
+  }
+
   private static List<Class<?>> getAllClassesIncludingSuperClasses(
       final Class<?> clazz, final boolean fromSuper) {
     final List<Class<?>> classes = new ArrayList<>();
@@ -32,7 +54,7 @@ public final class SuperClassReflectionUtils {
     return classes;
   }
 
-  public static<T> Constructor<T> getConstructor(final Class<T> clazz) {
+  public static <T> Constructor<T> getConstructor(final Class<T> clazz) {
     final Constructor<?>[] constructors = clazz.getDeclaredConstructors();
     Constructor<T> selectedConstructor = null;
     for (Constructor<?> constructor : constructors) {
@@ -54,6 +76,11 @@ public final class SuperClassReflectionUtils {
       return false;
     }
     return IntStream.range(0, parameterTypes.length)
-        .allMatch(i -> Objects.equals(parameterTypes[i], fields.get(i).getType()));
+        .allMatch(
+            i -> {
+              final Class<?> fieldType = fields.get(i).getType();
+              return Objects.equals(parameterTypes[i], fieldType)
+                  || Objects.equals(Double.class, fieldType);
+            });
   }
 }
